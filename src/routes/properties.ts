@@ -16,6 +16,7 @@ properties.get("/", async (c) => {
     const properties = await getProperties({
       maxPrice: Number(c.req.query("maxprice")) || undefined,
       location: c.req.query("location"),
+      maxGuests: Number(c.req.query("maxguests")) || undefined,
     });
     return c.json(properties);
   } catch (e) {
@@ -23,6 +24,11 @@ properties.get("/", async (c) => {
     return c.json([]);
   }
 });
+
+// GET: properties either properties/kind/villa/ | properties/kind/appartment/
+// If not neither of those 400
+// Filter properties based on the kind
+// Extra add all previous search filtering from GET: properties
 
 // individuell GET hämta en Property om den finns baserat på ID annars null 404
 properties.get("/:id", async (c) => {

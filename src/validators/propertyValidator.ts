@@ -7,11 +7,12 @@ const propertySchema = z.object({
   max_guests: z.number().min(1, "Max guests needs to be min 1"),
   price_per_night: z.number().min(100, "Price per night needs to be a minimum of 100"),
   location: z.string().min(2, "Location is nececary"),
+  kind: z.enum<PropertyKind[]>(["apartment", "villa"], `Must be one of "apartment", "villa"`),
+  property_id: z.string().optional(),
+  created_at: z.string().optional(),
 });
 
-const propertyOptionalSchema = propertySchema
-  .partial()
-  .refine((property) => Object.keys(property).length > 0, "At least one property field must be provided");
+const propertyOptionalSchema = propertySchema.partial();
 
 export const propertyValidator = zValidator("json", propertySchema, (result, c) => {
   if (!result.success) {
