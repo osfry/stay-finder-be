@@ -2,7 +2,7 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { prettyJSON } from "hono/pretty-json";
 import properties from "./routes/properties.js";
-// import bookingApp from "./routes/booking.js";
+import bookings from "./routes/bookings.js";
 const app = new Hono({ strict: false });
 
 app.use(prettyJSON());
@@ -14,7 +14,7 @@ app.get("/", (c) => {
 });
 
 app.route("/properties", properties);
-// app.route("/bookings", bookingApp);
+app.route("/bookings", bookings);
 
 serve(
   {

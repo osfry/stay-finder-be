@@ -11,6 +11,7 @@ const SELECT_QUERY_LIST: PropertyValidKey[] = [
   "location",
   "price_per_night",
   "max_guests",
+  "kind",
   "created_at",
 ];
 
@@ -20,16 +21,21 @@ const QUERY_ID = "property_id";
 type PropertyListFilter = Partial<{
   maxPrice: number;
   location: string;
+  maxGuests: number;
 }>;
 
-export async function getProperties(filters: PropertyListFilter): Promise<any[]> {
+export async function getProperties(filters: PropertyListFilter): Promise<Property[]> {
   let query = sb.from(TABLE_NAME).select(SELECT_QUERY);
 
   if (filters.maxPrice) {
     query = query.lte("price_per_night", filters.maxPrice);
   }
 
-  if (filters.location) {
+  if (filters.maxGuests) {
+    query = query.lte("max_guests", filters.maxGuests);
+  }
+
+  if (filters.location && filters.location.trim().length > 2) {
     query = query.ilike("location", `%${filters.location}%`);
   }
 

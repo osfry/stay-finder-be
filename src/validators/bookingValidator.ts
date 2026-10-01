@@ -9,7 +9,7 @@ const bookingObject = z.object({
   check_in: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Check in date is not valid YYYY-MM-DD"),
   check_out: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Check out date is not valid YYYY-MM-DD"),
   guests: z.number().min(1, "Guests needs to be at least 1"),
-  status: z.enum(["pending", "confirmed", "cancelled"]),
+  status: z.enum(["pending", "confirmed", "cancelled"]).optional(),
 });
 
 const dateOrder = {
