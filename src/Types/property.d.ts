@@ -9,8 +9,9 @@ interface Property {
   property_id: string;
   kind: PropertyKind;
   created_at: string;
+  user_id: string;
 }
 
-type NewProperty = Omit<Property, "property_id" | "created_at">;
+type NewProperty = Omit<Property, "property_id" | "created_at" | "user_id">;
 
 type PropertyValidKey = keyof Property;

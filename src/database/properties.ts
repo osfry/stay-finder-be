@@ -1,4 +1,4 @@
-import type { PostgrestFilterBuilder, PostgrestSingleResponse } from "@supabase/supabase-js";
+import type { PostgrestFilterBuilder, PostgrestSingleResponse, SupabaseClient } from "@supabase/supabase-js";
 
 import { sb } from "../lib/supabase.js";
 
@@ -37,12 +37,12 @@ function buildPropertiesFilter(query: PostgrestFilterBuilder<any, any, any, any>
   if (filters.location && filters.location.trim().length > 2) {
     query = query.ilike("location", `%${filters.location}%`);
   }
+
+  return query;
 }
 
 export async function getProperties(filters: PropertyListFilter): Promise<Property[]> {
-  let query = sb.from(TABLE_NAME).select(SELECT_QUERY);
-
-  buildPropertiesFilter(query, filters);
+  const query = buildPropertiesFilter(sb.from(TABLE_NAME).select(SELECT_QUERY), filters);
 
   const { error, data } = await query;
 
@@ -53,9 +53,7 @@ export async function getProperties(filters: PropertyListFilter): Promise<Proper
 }
 
 export async function getPropertiesByKind(kind: PropertyKind, filters: PropertyListFilter): Promise<Property[]> {
-  const query = sb.from(TABLE_NAME).select(SELECT_QUERY).eq(QUERY_KIND, kind);
-
-  buildPropertiesFilter(query, filters);
+  const query = buildPropertiesFilter(sb.from(TABLE_NAME).select(SELECT_QUERY).eq(QUERY_KIND, kind), filters);
 
   const { error, data } = await query;
 
@@ -78,8 +76,8 @@ export async function getPropertyById(propertyId: string): Promise<Property> {
   throw error;
 }
 
-export async function createProperty(propertyBody: NewProperty) {
-  const { error, data }: PostgrestSingleResponse<Property> = await sb
+export async function createProperty(client: SupabaseClient, propertyBody: NewProperty & { user_id: string }) {
+  const { error, data }: PostgrestSingleResponse<Property> = await client
     .from(TABLE_NAME)
     .insert(propertyBody)
     .select(SELECT_QUERY)
@@ -91,8 +89,12 @@ export async function createProperty(propertyBody: NewProperty) {
   throw error;
 }
 
-export async function updatePropertyById(propertyId: string, property: Partial<Property>): Promise<Property> {
-  const { error, data }: PostgrestSingleResponse<Property> = await sb
+export async function updatePropertyById(
+  client: SupabaseClient,
+  propertyId: string,
+  property: Partial<Property>,
+): Promise<Property> {
+  const { error, data }: PostgrestSingleResponse<Property> = await client
     .from(TABLE_NAME)
     .update(property)
     .eq(QUERY_ID, propertyId)
@@ -105,8 +107,8 @@ export async function updatePropertyById(propertyId: string, property: Partial<P
   throw error;
 }
 
-export async function deletePropertyById(propertyId: string) {
-  const { error }: PostgrestSingleResponse<Property> = await sb
+export async function deletePropertyById(client: SupabaseClient, propertyId: string) {
+  const { error }: PostgrestSingleResponse<Property> = await client
     .from(TABLE_NAME)
     .delete()
     .eq(QUERY_ID, propertyId)

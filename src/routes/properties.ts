@@ -66,8 +66,10 @@ properties.get("/:id", async (c) => {
 // "Skpande" av en Propery POST genom en JSON body använd Postman eller thunderclient för detta
 properties.post("/", requireAuth, propertyValidator, async (c) => {
   const propertyBody: NewProperty = c.req.valid("json");
+  const sb = c.get("supabase");
+  const user = c.get("user") as User;
   try {
-    const property = await createProperty(propertyBody);
+    const property = await createProperty(sb, { ...propertyBody, user_id: user.id });
     return c.json(property, 201);
   } catch (e) {
     console.warn("error in inserting property into SB DB", e);
@@ -77,27 +79,27 @@ properties.post("/", requireAuth, propertyValidator, async (c) => {
 
 // Extra: "Updaterande" av en Property PUT/PATCH (för patch kolla Partial types)
 // om den finns tänk en blandning mellan GET + POST
-properties.patch("/:id", propertyOptionalValidator, async (c) => {
+properties.patch("/:id", requireAuth, propertyOptionalValidator, async (c) => {
   const propertyId = c.req.param("id");
-  const propertyBody: Partial<Property> = c.req.valid("json");
+  const { user_id: _ignored, ...propertyBody }: Partial<Property> = c.req.valid("json");
   try {
-    const property = await updatePropertyById(propertyId, propertyBody);
+    const property = await updatePropertyById(c.get("supabase"), propertyId, propertyBody);
     return c.json(property);
   } catch (e) {
     console.log("Error updating property in SB DB", e);
-    return c.json(null, 404);
+    return c.json({ message: "Property not found or you are not allowed to update it" }, 404);
   }
 });
 
 // Extra: "bortagning" av en Property DELETE om den finns tänk en GET som sedan tar bort 200/204
-properties.delete("/:id", async (c) => {
-  const propertyId = c.req.param("id");
+properties.delete("/:id", requireAuth, async (c) => {
+  const propertyId = c.req.param("id") as string;
   try {
-    await deletePropertyById(propertyId);
-    return c.json(null, 200);
+    await deletePropertyById(c.get("supabase"), propertyId);
+    return c.json({ message: "Property deleted" }, 200);
   } catch (e) {
     console.warn("Error in deleting property", e);
-    return c.json(null, 404);
+    return c.json({ message: "Property not found or you are not allowed to delete it" }, 404);
   }
 });
 export default properties;
