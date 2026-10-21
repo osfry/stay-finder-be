@@ -2,19 +2,13 @@ import type { Context, Next } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
 import { HTTPException } from "hono/http-exception";
 import { createServerClient } from "@supabase/ssr";
-import type { SupabaseClient, User } from "@supabase/supabase-js";
 
 import { env } from "../env.js";
+import type { BasicSupabaseClient } from "../types/supabase.js";
+import type { Database } from "../types/database.types.js";
 
-declare module "hono" {
-  interface ContextVariableMap {
-    supabase: SupabaseClient;
-    user: User | null;
-  }
-}
-
-function createSupabaseForRequest(c: Context) {
-  return createServerClient(env.supabaseUrl, env.supabaseKey, {
+function createSupabaseForRequest(c: Context): BasicSupabaseClient {
+  return createServerClient<Database>(env.supabaseUrl, env.supabaseKey, {
     cookies: {
       getAll() {
         const cookies = getCookie(c);
@@ -43,7 +37,7 @@ function createSupabaseForRequest(c: Context) {
 }
 
 async function setSupabaseContext(c: Context): Promise<void> {
-  const existingClient = c.get("supabase") as SupabaseClient<any, "public", "public", any, any> | undefined;
+  const existingClient = c.get("supabase") as BasicSupabaseClient | undefined;
 
   if (existingClient) {
     return;
@@ -51,7 +45,7 @@ async function setSupabaseContext(c: Context): Promise<void> {
 
   const supabase = createSupabaseForRequest(c);
 
-  c.set("supabase", supabase as any);
+  c.set("supabase", supabase);
 
   const {
     data: { user },

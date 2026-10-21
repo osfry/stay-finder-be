@@ -1,6 +1,8 @@
-import type { PostgrestFilterBuilder, PostgrestSingleResponse, SupabaseClient } from "@supabase/supabase-js";
+﻿import type { PostgrestFilterBuilder, PostgrestSingleResponse } from "@supabase/supabase-js";
 
 import { sb } from "../lib/supabase.js";
+import type { NewProperty, Property, PropertyKind, PropertyValidKey } from "../types/property.js";
+import type { BasicSupabaseClient } from "../types/supabase.js";
 
 const TABLE_NAME = "properties";
 
@@ -76,7 +78,7 @@ export async function getPropertyById(propertyId: string): Promise<Property> {
   throw error;
 }
 
-export async function createProperty(client: SupabaseClient, propertyBody: NewProperty & { user_id: string }) {
+export async function createProperty(client: BasicSupabaseClient, propertyBody: NewProperty) {
   const { error, data }: PostgrestSingleResponse<Property> = await client
     .from(TABLE_NAME)
     .insert(propertyBody)
@@ -90,7 +92,7 @@ export async function createProperty(client: SupabaseClient, propertyBody: NewPr
 }
 
 export async function updatePropertyById(
-  client: SupabaseClient,
+  client: BasicSupabaseClient,
   propertyId: string,
   property: Partial<Property>,
 ): Promise<Property> {
@@ -107,7 +109,7 @@ export async function updatePropertyById(
   throw error;
 }
 
-export async function deletePropertyById(client: SupabaseClient, propertyId: string) {
+export async function deletePropertyById(client: BasicSupabaseClient, propertyId: string) {
   const { error }: PostgrestSingleResponse<Property> = await client
     .from(TABLE_NAME)
     .delete()

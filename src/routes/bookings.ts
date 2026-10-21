@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { bookingOptionalValidator, bookingValidator } from "../validators/bookingValidator.js";
 import fs from "fs/promises";
+import type { Booking, NewBooking } from "../types/booking.js";
 
 const bookings = new Hono({ strict: false });
 
@@ -58,6 +59,8 @@ bookings.post("/", bookingValidator, async (c) => {
   const booking: Booking = {
     ...bookingBody,
     booking_id: `booking_${1000 + bookings.length + 1}`,
+    created_at: new Date().toISOString(),
+    status: bookingBody.status ?? "pending",
   };
   bookings.push(booking);
   try {

@@ -1,6 +1,7 @@
 import type { PostgrestSingleResponse } from "@supabase/supabase-js";
 
 import { sb } from "../lib/supabase.js";
+import type { Booking, NewBooking } from "../types/booking.js";
 
 const TABLE_NAME = "bookings";
 const QUERY_ID = "booking_id";
