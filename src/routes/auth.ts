@@ -60,4 +60,28 @@ auth.post("/login", authValidator, async (c) => {
   }
 });
 
+auth.post("/logout", async (c) => {
+  try {
+    const sb = c.get("supabase");
+    const { error } = await sb.auth.signOut();
+    if (error) {
+      throw error;
+    }
+    return c.json({ message: "logged out" });
+  } catch (e: any) {
+    console.warn("Error in logging out", e);
+    return c.json({ message: e?.message }, 400);
+  }
+});
+
+auth.get("/me", (c) => {
+  const user = c.get("user");
+
+  if (!user) {
+    return c.json({ message: "unauthorized" }, 401);
+  }
+
+  return c.json({ user });
+});
+
 export default auth;
