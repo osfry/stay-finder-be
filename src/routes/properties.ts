@@ -10,6 +10,7 @@ import {
   deletePropertyById,
   getProperties,
   getPropertiesByKind,
+  getPropertiesByUser,
   getPropertyById,
   updatePropertyById,
 } from "../database/properties.js";
@@ -48,6 +49,16 @@ properties.get("/kind/:kind", propertyParamValidator, async (c) => {
     return c.json(properties);
   } catch (e) {
     console.warn("Error in fetching properties from SB database", e);
+    return c.json([]);
+  }
+});
+
+properties.get("/mine", requireAuth, async (c) => {
+  const user = c.get("user") as User;
+  try {
+    return c.json(await getPropertiesByUser(c.get("supabase"), user.id));
+  } catch (e) {
+    console.warn("Error in fetching user properties from SB database", e);
     return c.json([]);
   }
 });

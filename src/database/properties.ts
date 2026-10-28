@@ -54,6 +54,15 @@ export async function getProperties(filters: PropertyListFilter): Promise<Proper
   throw error;
 }
 
+export async function getPropertiesByUser(client: BasicSupabaseClient, userId: string): Promise<Property[]> {
+  const { error, data } = await client.from(TABLE_NAME).select(SELECT_QUERY).eq("user_id", userId);
+
+  if (!error) {
+    return data as any as Property[];
+  }
+  throw error;
+}
+
 export async function getPropertiesByKind(kind: PropertyKind, filters: PropertyListFilter): Promise<Property[]> {
   const query = buildPropertiesFilter(sb.from(TABLE_NAME).select(SELECT_QUERY).eq(QUERY_KIND, kind), filters);
 
