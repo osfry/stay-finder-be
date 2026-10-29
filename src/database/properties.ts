@@ -25,9 +25,14 @@ type PropertyListFilter = Partial<{
   maxPrice: number;
   location: string;
   maxGuests: number;
+  sort: "asc" | "desc";
 }>;
 
 function buildPropertiesFilter(query: PostgrestFilterBuilder<any, any, any, any>, filters: PropertyListFilter) {
+  if (filters.sort) {
+    query = query.order("price_per_night", { ascending: filters.sort === "asc" });
+  }
+
   if (filters.maxPrice) {
     query = query.lte("price_per_night", filters.maxPrice);
   }
