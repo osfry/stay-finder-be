@@ -2,6 +2,7 @@ import type { PostgrestSingleResponse } from "@supabase/supabase-js";
 
 import { sb } from "../lib/supabase.js";
 import type { Booking, NewBooking } from "../types/booking.js";
+import type { BasicSupabaseClient } from "../types/supabase.js";
 
 const TABLE_NAME = "bookings";
 const QUERY_ID = "booking_id";
@@ -28,8 +29,11 @@ export async function getBookingById(bookingId: string): Promise<Booking> {
   throw error;
 }
 
-export async function createBooking(bookingBody: NewBooking): Promise<Booking> {
-  const { error, data }: PostgrestSingleResponse<Booking> = await sb
+export async function createBooking(
+  client: BasicSupabaseClient,
+  bookingBody: NewBooking & { user_id: string },
+): Promise<Booking> {
+  const { error, data }: PostgrestSingleResponse<Booking> = await client
     .from(TABLE_NAME)
     .insert(bookingBody)
     .select()

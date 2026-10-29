@@ -1,6 +1,9 @@
 import { Hono } from "hono";
 import { bookingOptionalValidator, bookingValidator } from "../validators/bookingValidator.js";
 import fs from "fs/promises";
+import type { User } from "@supabase/supabase-js";
+import { requireAuth } from "../middleware/auth.js";
+import { createBooking } from "../database/bookings.js";
 import type { Booking, NewBooking } from "../types/booking.js";
 
 const bookings = new Hono({ strict: false });
@@ -53,22 +56,20 @@ bookings.get("/:id", async (c) => {
 });
 
 // "Skpande" av en Propery POST genom en JSON body använd Postman eller thunderclient för detta
-bookings.post("/", bookingValidator, async (c) => {
+bookings.post("/", requireAuth, bookingValidator, async (c) => {
   const bookingBody: NewBooking = c.req.valid("json");
-  const bookings = await getBookings();
-  const booking: Booking = {
-    ...bookingBody,
-    booking_id: `booking_${1000 + bookings.length + 1}`,
-    created_at: new Date().toISOString(),
-    status: bookingBody.status ?? "pending",
-  };
-  bookings.push(booking);
+  const user = c.get("user") as User;
   try {
-    await saveBookings(bookings);
+    const booking = await createBooking(c.get("supabase"), {
+      ...bookingBody,
+      user_id: user.id,
+      status: bookingBody.status ?? "pending",
+    });
+    return c.json(booking, 201);
   } catch (e) {
-    return c.json(e, 500);
+    console.warn("Error in inserting booking into SB DB", e);
+    return c.json({ message: "Could not create booking" }, 500);
   }
-  return c.json(booking, 201);
 });
 
 // Extra: "Updaterande" av en Booking PUT/PATCH (för patch kolla Partial types)

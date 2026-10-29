@@ -19,12 +19,17 @@ import type { NewProperty, Property } from "../types/property.js";
 
 const properties = new Hono({ strict: false });
 
+function parseSort(value: string | undefined): "asc" | "desc" | undefined {
+  return value === "asc" || value === "desc" ? value : undefined;
+}
+
 properties.get("/", async (c) => {
   try {
     const properties = await getProperties({
       maxPrice: Number(c.req.query("maxprice")) || undefined,
       location: c.req.query("location"),
       maxGuests: Number(c.req.query("maxguests")) || undefined,
+      sort: parseSort(c.req.query("sort")),
     });
     return c.json(properties);
   } catch (e) {
@@ -44,6 +49,7 @@ properties.get("/kind/:kind", propertyParamValidator, async (c) => {
       maxPrice: Number(c.req.query("maxprice")) || undefined,
       location: c.req.query("location"),
       maxGuests: Number(c.req.query("maxguests")) || undefined,
+      sort: parseSort(c.req.query("sort")),
     });
     return c.json(properties);
   } catch (e) {
